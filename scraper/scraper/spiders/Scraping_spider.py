@@ -14,5 +14,10 @@ class ScrapingSpider(scrapy.Spider):
     def parse(self, response):
         page = response.url.split("/")[-2]
         filename = f"Info-{page}.html"
+        citations = response.css("a.external::attr(href)").getall()
+        for link in citations:
+            yield {
+                "source_url": link
+            }
         Path(filename).write_bytes(response.body)
         
