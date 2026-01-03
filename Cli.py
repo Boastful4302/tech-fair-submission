@@ -4,6 +4,8 @@ import subprocess
 
 #scrapy crawl scraping -a topic=<blah> -O sources.json 
 
+# note: MOVE THE SOURCES FILE INTO SCRAPER OR THE SUN WILL EXPLODE
+
 #scrapy crawl sources -O sources.json
 
 try:
