@@ -1,10 +1,11 @@
 from pathlib import Path
-
+import os
 import scrapy
 
 
 class ScrapingSpider(scrapy.Spider):
     name = "scraping"
+    output_dir = "document_folder"
     def __init__(self, topic:str, *args, **kwargs):
         super(ScrapingSpider, self).__init__(*args,**kwargs)
         #topic = topic.replace(" ", "_")
@@ -12,8 +13,11 @@ class ScrapingSpider(scrapy.Spider):
 #       self.search_string = "https://www.google.com/search?q=" + topic
 
     def parse(self, response):
+        
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
         page = response.url.split("/")[-2]
-        filename = f"Info-{page}.html"
+        filename = f"{self.output_dir}\Info-{page}.html"
         citations = response.css("a.external::attr(href)").getall()
         for link in citations:
             yield {
