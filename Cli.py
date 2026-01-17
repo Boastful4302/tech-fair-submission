@@ -1,7 +1,6 @@
 import subprocess
 import shutil
 import os
-
 #cd scraper
 
 #scrapy crawl scraping -a topic=<blah> -O sources.json 
@@ -27,15 +26,15 @@ try:
         text=True,
         cwd="scraper"
     )
-    stdout, stderr = process.communicate(timeout=15)
+    stdout, stderr = process.communicate(timeout=30)
 
     if process.returncode == 0:
         print("Output: ", stdout)
     else:
         print("Error: ", stderr)
 
-    source_file = "scraper\sources.json"
-    goal_source = "scraper\scraper"
+    source_file = "scraper\\sources.json"
+    goal_source = "scraper\\scraper"
 
     shutil.move(source_file, goal_source)
 

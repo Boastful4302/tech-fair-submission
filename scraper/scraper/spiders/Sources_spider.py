@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import scrapy
 import json
+from ironpdf import *
 
 cur_dir = Path(__file__).resolve()
 cur_dir = str(cur_dir).split('\\')
@@ -14,6 +15,8 @@ class SourceSpider(scrapy.Spider):
     output_dir = "document_folder"
 
     def parse_da_source(self,response):
+        renderer = ChromePdfRenderer()
+
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
@@ -24,7 +27,13 @@ class SourceSpider(scrapy.Spider):
         }
         page = response.url.split("/")[-2]
         filename = f"{self.output_dir}\Info-{page}.html"
-        Path(filename).write_bytes(response.body)
+        # try:
+        #     pdfkit.from_string(response.body, filename)
+        # except Exception as e:
+        #     print(f"failed to make pdf {response.url} {e}")
+        pdfFromHtmlString = renderer.RenderHtmlAsPdf(response.body,filename)
+        pdfFromHtmlString.SaveAs("markup_with_assets.pdf")
+        # Path(filename).write_bytes(response.body)
 
     def start_requests(self):
         with open(cur_dir + "\sources.json", "r", encoding="utf-8") as f:
