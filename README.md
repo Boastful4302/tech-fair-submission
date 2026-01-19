@@ -1,28 +1,10 @@
 # tech-fair-submission
 My submission for the 2025/2026 Dekalb County Tech Fair 
 
-This project is a webcrawler that searches and obtains historical data
+This project is a tool that asks for a topic, goes to the wikipedia page for the topic entered by the user, scrapes that page, uses html tags to find the sources for the page, scrapes the sources, and then sends the scraped files to Ollama.
 
-TODO:
-input query from user
-let the webcrawler get the query
-Parce the data
-take data and give it to ai 
-ai sums up data
-Summary is stored 
-print summary
+It has 3 main parts
 
-
-3 main parts
-
-Webcrawler.py: parcing and searching data
-Ai_intergrate.py: uses ai to sum up
-Cli.py: entry to project + code
-
-We decided on ollama and decided to ditch the webscrapper
-we learned about Postman 
-Get
-Post
-Delete
-command line or front end app for the project presentation
-LANGCHAIN to connect data into backend, ollama retrieves but we need to make it presentable
+1- Webcrawler.py: parcing and searching data
+2- Ai_intergrate.py: uses ai to sum up
+3- Cli.py: entry to project + code
