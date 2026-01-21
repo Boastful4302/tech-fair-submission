@@ -17,7 +17,7 @@ class ScrapingSpider(scrapy.Spider):
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         page = response.url.split("/")[-2]
-        filename = f"{self.output_dir}\Info-{page}.html"
+        filename = f"{self.output_dir}\\Info-{page}.html"   
         citations = response.css("a.external::attr(href)").getall()
         for link in citations:
             yield {
