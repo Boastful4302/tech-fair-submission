@@ -9,9 +9,10 @@ from typing import List
 import requests
 import trafilatura
 
-HTML_DIR = Path("exported_html")
+HTML_DIR = Path("scraper/document_folder")
 OUTPUT_DIR = Path("summaries")
 CACHE_FILE = OUTPUT_DIR / "cache.json"
+ALL_SUMMARIES = OUTPUT_DIR / "total" / "all_summaries.md"
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "llama3.1"
@@ -89,6 +90,8 @@ def ollama_generate(prompt: str) -> str:
 def summarize_chunk(chunk: str) -> str:
     prompt = f"""
 You are summarizing part of a web article.
+DO NOT USE WORDS SUCH AS "HERE IS THE SUMMARY" OR REFERENCE ME IN ANY WAY.
+
 
 Summarize the following content using concise bullet points.
 Preserve:
@@ -96,6 +99,7 @@ Preserve:
 - numbers
 - key claims
 - technical terms
+
 
 TEXT:
 {chunk}
@@ -108,13 +112,16 @@ def merge_summaries(summaries: List[str]) -> str:
 
     prompt = f"""
 You are combining multiple partial summaries.
+DO NOT USE WORDS SUCH AS "HERE IS THE COMBINED SUMMARY" OR REFERENCE ME IN ANY WAY.
+Combine the following partial summaries into a single coherent summary. Make sure to eliminate any redundancy and ensure clarity. Along the way only use bullet points for the entire summary.
+The only other things you can do other than bullet points is to add section headers for organization if needed.
+Preserve:
+- names
+- numbers
+- key claims
+- technical terms
 
-Create a clean final summary with:
-
-1. Key points (bulleted)
-2. Important facts or data
-3. Uncertainties or missing info
-4. 2 or 3 sentence overall takeaway
+MAKE SURE THE ENTIRE SUMMARY IS JUST BULLET POINTS. 
 
 PARTIAL SUMMARIES:
 {combined}
@@ -173,7 +180,16 @@ def main() -> None:
     for html_file in html_files:
         process_html_file(html_file, cache)
 
-    print("\nAll files processed.")
+    # Combine all summaries into one file
+    md_files = sorted(OUTPUT_DIR.glob("*.md"))
+    md_files = [f for f in md_files if f.name != "all_summaries.md"]
+
+    with open(ALL_SUMMARIES, 'w', encoding='utf-8') as f:
+        for md_file in md_files:
+            content = md_file.read_text()
+            f.write(f"# {md_file.stem}\n\n{content}\n\n---\n\n")
+
+    print(f"\nAll summaries combined into {ALL_SUMMARIES}")
 
 
 if __name__ == "__main__":

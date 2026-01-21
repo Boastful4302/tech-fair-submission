@@ -11,8 +11,11 @@ import os
 
 try:
     topic=input("What topic are you researching? ")
+    python_path = r"C:/Users/noahk/OneDrive/Documents/GitHub/tech-fair-submission/.venv/Scripts/python.exe"
     process = subprocess.Popen(
         [
+            python_path,
+            "-m",
             "scrapy",
             "crawl",
             "scraping",
@@ -40,6 +43,8 @@ try:
 
     process = subprocess.Popen(
         [
+            python_path,
+            "-m",
             "scrapy",
             "crawl",
             "sources",
@@ -50,6 +55,23 @@ try:
         cwd="scraper"
     )
     stdout, stderr = process.communicate(timeout=300)
+
+    if process.returncode == 0:
+        print("Output: ", stdout)
+    else:
+        print("Error: ", stderr)
+
+    process = subprocess.Popen(
+        [
+            python_path,
+            "ai.py",
+        ],
+        stdout = subprocess.PIPE,
+        stderr = subprocess.PIPE,
+        text=True,
+        cwd="."
+    )
+    stdout, stderr = process.communicate(timeout=1800)
 
     if process.returncode == 0:
         print("Output: ", stdout)

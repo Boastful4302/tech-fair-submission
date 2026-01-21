@@ -3,11 +3,7 @@ import os
 import scrapy
 import json
 
-cur_dir = Path(__file__).resolve()
-cur_dir = str(cur_dir).split('\\')
-cur_dir = cur_dir[:-2]
-sep = "\\"
-cur_dir = sep.join(cur_dir)
+cur_dir = Path(__file__).resolve().parent.parent
 
 class SourceSpider(scrapy.Spider):
     name = "sources"
@@ -23,11 +19,12 @@ class SourceSpider(scrapy.Spider):
             "status":response.status
         }
         page = response.url.split("/")[-2]
-        filename = f"{self.output_dir}\Info-{page}.html"
+        filename = os.path.join(self.output_dir, f"Info-{page}.html")
+        Path(filename).write_bytes(response.body)
 
 
     def start_requests(self):
-        with open(cur_dir + "\sources.json", "r", encoding="utf-8") as f:
+        with open(os.path.join(cur_dir, "sources.json"), "r", encoding="utf-8") as f:
             data = json.load(f)
         for item in data:
             link = item.get("source_url")
