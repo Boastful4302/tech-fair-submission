@@ -12,7 +12,7 @@ import sys
 
 try:
     topic=input("What topic are you researching? ")
-    python_path = r"C:/Users/noahk/OneDrive/Documents/GitHub/tech-fair-submission/.venv/Scripts/python.exe"
+    python_path = sys.executable
     process = subprocess.Popen(
         [
             python_path,
