@@ -129,18 +129,18 @@ def process_html_file(path: Path, cache: dict) -> None:
     file_id = file_hash(path)
 
     if cache.get(path.name) == file_id:
-        print("  → unchanged, skipping")
+        print("  -> unchanged, skipping")
         return
 
     html = path.read_text(errors="ignore")
     text = extract_text_from_html(html)
 
     if not text:
-        print("  → no readable content found")
+        print("  -> no readable content found")
         return
 
     chunks = chunk_text(text)
-    print(f"  → {len(chunks)} chunks")
+    print(f"  -> {len(chunks)} chunks")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         chunk_summaries = list(executor.map(summarize_chunk, chunks))
