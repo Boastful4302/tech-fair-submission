@@ -15,7 +15,7 @@ OUTPUT_DIR = Path("summaries")
 CACHE_FILE = OUTPUT_DIR / "cache.json"
 ALL_SUMMARIES = OUTPUT_DIR / "total" / "all_summaries.md"
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434/api/generate")
 MODEL = "llama3.1"
 
 SESSION = requests.Session()
@@ -67,18 +67,24 @@ def chunk_text(text: str) -> List[str]:
 
 
 def ollama_generate(prompt: str) -> str:
-    response = SESSION.post(
-        OLLAMA_URL,
-        json={
-            "model": MODEL,
-            "prompt": prompt,
-            "stream": False,
-        },
-        timeout=300,
-    )
+    try:
+        response = SESSION.post(
+            OLLAMA_URL,
+            json={
+                "model": MODEL,
+                "prompt": prompt,
+                "stream": False,
+            },
+            timeout=300,
+        )
+        response.raise_for_status()
+        return response.json()["response"].strip()
 
-    response.raise_for_status()
-    return response.json()["response"].strip()
+    except requests.exceptions.RequestException as exc:
+        print(f"\nERROR: Failed to call Ollama at {OLLAMA_URL}.")
+        print("Please make sure Ollama is running and accessible at that address.")
+        print("You can set a different host using the OLLAMA_URL environment variable.")
+        raise SystemExit(1) from exc
 
 
 def summarize_chunk(chunk: str) -> str:
