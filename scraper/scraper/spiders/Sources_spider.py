@@ -3,13 +3,18 @@ import os
 import scrapy
 import json
 
-cur_dir = Path(__file__).resolve().parent.parent
+cur_dir = Path(__file__).resolve()
+cur_dir = str(cur_dir).split('\\')
+cur_dir = cur_dir[:-2]
+sep = "\\"
+cur_dir = sep.join(cur_dir)
 
 class SourceSpider(scrapy.Spider):
     name = "sources"
     output_dir = "document_folder"
 
     def parse_da_source(self,response):
+
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
@@ -19,12 +24,15 @@ class SourceSpider(scrapy.Spider):
             "status":response.status
         }
         page = response.url.split("/")[-2]
-        filename = os.path.join(self.output_dir, f"Info-{page}.html")
-        Path(filename).write_bytes(response.body)
-
+        filename = f"{self.output_dir}\Info-{page}.html"
+        # try:
+        #     pdfkit.from_string(response.body, filename)
+        # except Exception as e:
+        #     print(f"failed to make pdf {response.url} {e}")
+        # Path(filename).write_bytes(response.body)
 
     def start_requests(self):
-        with open(os.path.join(cur_dir, "sources.json"), "r", encoding="utf-8") as f:
+        with open(cur_dir + "\sources.json", "r", encoding="utf-8") as f:
             data = json.load(f)
         for item in data:
             link = item.get("source_url")

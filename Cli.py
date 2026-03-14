@@ -12,7 +12,7 @@ import sys
 
 try:
     topic=input("What topic are you researching? ")
-    python_path = sys.executable
+    python_path = r"C:/Users/noahk/OneDrive/Documents/GitHub/tech-fair-submission/.venv/Scripts/python.exe"
     process = subprocess.Popen(
         [
             python_path,
@@ -82,5 +82,5 @@ try:
 except subprocess.TimeoutExpired:
     process.kill()
     print("Command timed out")
-except FileNotFoundError:
-    print("The command was not found. Check your command or path.")
+#except FileNotFoundError:
+#    print("The command was not found. Check your command or path.")
