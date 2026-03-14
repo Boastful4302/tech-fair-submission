@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 from typing import List
+import concurrent.futures
 
 import requests
 import trafilatura
@@ -17,12 +18,13 @@ ALL_SUMMARIES = OUTPUT_DIR / "total" / "all_summaries.md"
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "llama3.1"
 
-CHUNK_SIZE = 3500        # characters
+SESSION = requests.Session()
+
+CHUNK_SIZE = 2000        # characters (reduced for faster API calls)
 CHUNK_OVERLAP = 300      # characters
 
 
 def file_hash(path: Path) -> str:
-    """Generate SHA256 hash for caching."""
     h = hashlib.sha256()
     h.update(path.read_bytes())
     return h.hexdigest()
@@ -40,10 +42,7 @@ def save_cache(cache: dict) -> None:
 
 
 def extract_text_from_html(html: str) -> str:
-    """
-    Extract main article text from HTML.
-    Uses Trafilatura for boilerplate removal.
-    """
+
     downloaded = trafilatura.extract(
         html,
         include_comments=False,
@@ -55,9 +54,7 @@ def extract_text_from_html(html: str) -> str:
 
 
 def chunk_text(text: str) -> List[str]:
-    """
-    Split text into overlapping chunks.
-    """
+
     chunks = []
     start = 0
 
@@ -70,10 +67,7 @@ def chunk_text(text: str) -> List[str]:
 
 
 def ollama_generate(prompt: str) -> str:
-    """
-    Send prompt to Ollama and return response text.
-    """
-    response = requests.post(
+    response = SESSION.post(
         OLLAMA_URL,
         json={
             "model": MODEL,
@@ -135,37 +129,33 @@ def process_html_file(path: Path, cache: dict) -> None:
     file_id = file_hash(path)
 
     if cache.get(path.name) == file_id:
-        print("  → unchanged, skipping")
+        print("  -> unchanged, skipping")
         return
 
     html = path.read_text(errors="ignore")
     text = extract_text_from_html(html)
 
     if not text:
-        print("  → no readable content found")
+        print("  -> no readable content found")
         return
 
     chunks = chunk_text(text)
-    print(f"  → {len(chunks)} chunks")
+    print(f"  -> {len(chunks)} chunks")
 
-    chunk_summaries = []
-
-    for i, chunk in enumerate(chunks, start=1):
-        print(f"     summarizing chunk {i}/{len(chunks)}")
-        summary = summarize_chunk(chunk)
-        chunk_summaries.append(summary)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        chunk_summaries = list(executor.map(summarize_chunk, chunks))
 
     final_summary = merge_summaries(chunk_summaries)
 
     OUTPUT_DIR.mkdir(exist_ok=True)
 
     output_file = OUTPUT_DIR / f"{path.stem}.md"
-    output_file.write_text(final_summary)
+    output_file.write_text(final_summary, encoding='utf-8')
 
     cache[path.name] = file_id
-    save_cache(cache)
+    # save_cache(cache)  # Moved to main()
 
-    print(f"  ✓ saved to {output_file}")
+    print(f"  -> saved to {output_file}")
 
 
 def main() -> None:
@@ -188,6 +178,8 @@ def main() -> None:
         for md_file in md_files:
             content = md_file.read_text()
             f.write(f"# {md_file.stem}\n\n{content}\n\n---\n\n")
+
+    save_cache(cache)  # Save cache once at the end
 
     print(f"\nAll summaries combined into {ALL_SUMMARIES}")
 

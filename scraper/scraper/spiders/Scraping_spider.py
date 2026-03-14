@@ -19,7 +19,10 @@ class ScrapingSpider(scrapy.Spider):
         page = response.url.split("/")[-2]
         filename = os.path.join(self.output_dir, f"Info-{page}.html")   
         citations = response.css("a.external::attr(href)").getall()
+        excluded_links = ["Info-wikimediafoundation.org.html"]
         for link in citations:
+            if link in excluded_links:
+                continue
             yield {
                 "source_url": link
             }

@@ -1,6 +1,7 @@
 import subprocess
 import shutil
 import os
+import sys
 #cd scraper
 
 #scrapy crawl scraping -a topic=<blah> -O sources.json 
@@ -11,7 +12,7 @@ import os
 
 try:
     topic=input("What topic are you researching? ")
-    python_path = r"C:/Users/noahk/OneDrive/Documents/GitHub/tech-fair-submission/.venv/Scripts/python.exe"
+    python_path = sys.executable
     process = subprocess.Popen(
         [
             python_path,
